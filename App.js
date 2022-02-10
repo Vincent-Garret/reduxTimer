@@ -1,20 +1,40 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import  { Text } from 'react-native';
+import { update } from './src/actions'
+import reducers from './src/reducers';
+import NewTimer from './src/components/NewTimer'
+import ListTimers from './src/components/ListTimer'
+import { loadState, saveState } from './src/utils'
 
-export default function App() {
+const persistedState = loadState()
+const store = createStore(reducers, persistedState)
+store.subscribe(() => {
+  saveState(store.getState())
+})
+
+
+let lastUpdateTime = Date.now()
+setInterval(() => {
+  const now = Date.now()
+  const deltaTime = now - lastUpdateTime
+  lastUpdateTime = now
+  store.dispatch(update(deltaTime))
+}, 5000)
+
+
+
+function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <Text>TMRZ</Text>
+        <NewTimer />
+      <ListTimers />
+    </Provider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
+
+export default App;
